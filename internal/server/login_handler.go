@@ -20,9 +20,9 @@ func (bHandler baseHandler) Login(ctx context.Context, w http.ResponseWriter, r 
 	}
 
 	// find user in storage
-	u, err := uf.GetUser(ctx, bHandler.storage)
+	u, err := bHandler.storage.GetUser(ctx, *uf)
 	if err != nil {
-		if errors.Is(err, models.ErrNotExists) {
+		if errors.Is(err, models.ErrUserNotExists) {
 			logger.Error("user not found", zap.Error(err))
 			w.WriteHeader(http.StatusUnauthorized)
 			return
@@ -39,7 +39,6 @@ func (bHandler baseHandler) Login(ctx context.Context, w http.ResponseWriter, r 
 		return
 	}
 
-	// user found. generate new token
 	token, err := GenerateJWT(bHandler.secret, u.Login, bHandler.tokenExpr)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

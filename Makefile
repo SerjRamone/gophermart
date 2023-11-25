@@ -4,4 +4,4 @@ build:
 	go build -o cmd/gophermart/gophermart cmd/gophermart/*.go
 
 run: build
-	./cmd/gophermart/gophermart -d=$(DSN) -l=info -s=supersecret
+	./cmd/gophermart/gophermart -d=$(DSN) -l=info -s=supersecret -e=86400

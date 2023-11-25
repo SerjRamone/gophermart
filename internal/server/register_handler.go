@@ -13,14 +13,14 @@ import (
 // Register handles user registrations
 func (bHandler baseHandler) Register(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	// get UserForm from request
-	u, err := bHandler.getCredentials(w, r)
+	uf, err := bHandler.getCredentials(w, r)
 	if err != nil {
 		logger.Error("get credentails error", zap.Error(err))
 		return
 	}
 
 	// hash password
-	u.Password, err = bHandler.getHash(u.Password)
+	uf.Password, err = bHandler.getHash(uf.Password)
 	if err != nil {
 		logger.Error("get password hash error", zap.Error(err))
 		w.WriteHeader(http.StatusInternalServerError)
@@ -28,8 +28,8 @@ func (bHandler baseHandler) Register(ctx context.Context, w http.ResponseWriter,
 	}
 
 	// create user
-	if _, err = u.CreateUser(ctx, bHandler.storage); err != nil {
-		if errors.Is(err, models.ErrAlreadyExists) {
+	if _, err = bHandler.storage.CreateUser(ctx, *uf); err != nil {
+		if errors.Is(err, models.ErrUserAlreadyExists) {
 			logger.Error("login is already exists", zap.Error(err))
 			w.WriteHeader(http.StatusConflict)
 			return
@@ -44,7 +44,7 @@ func (bHandler baseHandler) Register(ctx context.Context, w http.ResponseWriter,
 	// return
 
 	// generate auth token
-	token, err := GenerateJWT(bHandler.secret, u.Login, bHandler.tokenExpr)
+	token, err := GenerateJWT(bHandler.secret, uf.Login, bHandler.tokenExpr)
 	if err != nil {
 		logger.Error("generate JWT error", zap.Error(err))
 		w.WriteHeader(http.StatusInternalServerError)

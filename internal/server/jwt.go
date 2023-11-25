@@ -2,15 +2,12 @@
 package server
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/SerjRamone/gophermart/internal/models"
-	"github.com/SerjRamone/gophermart/pkg/logger"
 	"github.com/golang-jwt/jwt/v5"
-	"go.uber.org/zap"
 )
 
 // Claims is a custom JWT Claims Set
@@ -76,7 +73,7 @@ func (bHandler *baseHandler) getUserFromToken(r *http.Request) (*models.User, er
 		Login: claims.Login,
 	}
 
-	u, err := uf.GetUser(r.Context(), bHandler.storage)
+	u, err := bHandler.storage.GetUser(r.Context(), uf)
 	if err != nil {
 		return nil, fmt.Errorf("get user from token error: %w", err)
 	}
@@ -84,12 +81,12 @@ func (bHandler *baseHandler) getUserFromToken(r *http.Request) (*models.User, er
 	return u, nil
 }
 
-type key string
-
-const userContextKey key = "userKey"
+// store user in context
+// type key string
+// const userContextKey key = "userKey"
 
 // JwtMiddleware ...
-func (bHandler baseHandler) JwtMiddleware(next http.Handler) http.Handler {
+func (bHandler baseHandler) JWTMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("Authorization")
 
@@ -103,14 +100,16 @@ func (bHandler baseHandler) JwtMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		u, err := bHandler.getUserFromToken(r)
-		if err != nil {
-			w.WriteHeader(http.StatusUnauthorized)
-			logger.Error("failed to get user from token", zap.Error(err))
-			return
-		}
+		// store user in context
+		// u, err := bHandler.getUserFromToken(r)
+		// if err != nil {
+		// 	w.WriteHeader(http.StatusUnauthorized)
+		// 	logger.Error("failed to get user from token", zap.Error(err))
+		// 	return
+		// }
+		// ctx := context.WithValue(r.Context(), userContextKey, u)
+		// next.ServeHTTP(w, r.WithContext(ctx))
 
-		ctx := context.WithValue(r.Context(), userContextKey, u)
-		next.ServeHTTP(w, r.WithContext(ctx))
+		next.ServeHTTP(w, r)
 	})
 }

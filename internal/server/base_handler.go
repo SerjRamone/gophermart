@@ -25,6 +25,10 @@ type baseHandler struct {
 type Storage interface {
 	CreateUser(context.Context, models.UserForm) (*models.User, error)
 	GetUser(context.Context, models.UserForm) (*models.User, error)
+	CreateOrder(context.Context, models.OrderForm) (*models.Order, error)
+	GetOrder(context.Context, models.OrderForm) (*models.Order, error)
+	GetUserOrders(ctx context.Context, order *models.User) ([]*models.Order, error)
+	GetUserBalance(ctx context.Context, userID string) (*models.UserBalance, error)
 }
 
 // NewBaseHandler creates new baseHandler
@@ -62,7 +66,7 @@ func (bHandler baseHandler) getCredentials(w http.ResponseWriter, r *http.Reques
 	return &u, nil
 }
 
-// getHash return hash from string
+// getHash returns hash from string
 func (bHandler baseHandler) getHash(password string) (string, error) {
 	// logger.Info("getting hash for password", zap.String("password", password))
 	b, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)

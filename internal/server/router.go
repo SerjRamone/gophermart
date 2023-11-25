@@ -21,6 +21,22 @@ func NewRouter(secret []byte, tokenExpr int, storage Storage) chi.Router {
 		r.Post("/login", func(w http.ResponseWriter, r *http.Request) {
 			baseHandler.Login(r.Context(), w, r)
 		})
+
+		r.Group(func(r chi.Router) {
+			r.Use(baseHandler.JWTMiddleware)
+
+			r.Post("/orders", func(w http.ResponseWriter, r *http.Request) {
+				baseHandler.PostOrder(r.Context(), w, r)
+			})
+			r.Get("/orders", func(w http.ResponseWriter, r *http.Request) {
+				baseHandler.GetOrder(r.Context(), w, r)
+			})
+
+			// @todo
+			r.Get("/balance", func(w http.ResponseWriter, r *http.Request) {
+				baseHandler.Balance(r.Context(), w, r)
+			})
+		})
 	})
 
 	return mux
