@@ -32,9 +32,15 @@ func NewRouter(secret []byte, tokenExpr int, storage Storage) chi.Router {
 				baseHandler.GetOrder(r.Context(), w, r)
 			})
 
-			// @todo
 			r.Get("/balance", func(w http.ResponseWriter, r *http.Request) {
 				baseHandler.Balance(r.Context(), w, r)
+			})
+			r.Post("/balance/withdraw", func(w http.ResponseWriter, r *http.Request) {
+				baseHandler.Withdraw(r.Context(), w, r)
+			})
+
+			r.Get("/withdrawals", func(w http.ResponseWriter, r *http.Request) {
+				baseHandler.Withdrawals(r.Context(), w, r)
 			})
 		})
 	})

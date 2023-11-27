@@ -3,6 +3,7 @@ package models
 
 import (
 	"errors"
+	"time"
 	// "github.com/google/uuid"
 )
 
@@ -12,6 +13,9 @@ var (
 
 	// ErrUserNotExists user not found error
 	ErrUserNotExists = errors.New("user is not exists")
+
+	// ErrNotEnoughPoints too small points balance error
+	ErrNotEnoughPoints = errors.New("not enough points")
 )
 
 // UserForm data object from request
@@ -33,4 +37,11 @@ type User struct {
 type UserBalance struct {
 	Current   float64 `json:"current"`
 	Withdrawn float64 `json:"withdrawn"`
+}
+
+// Withdrawal some point withdrawal operation
+type Withdrawal struct {
+	OrderNumber string    `json:"order"`
+	Total       float64   `json:"sum"`
+	CreatedAt   time.Time `json:"processed_at"`
 }

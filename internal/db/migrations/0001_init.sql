@@ -41,8 +41,8 @@ COMMENT ON COLUMN "order".accrual IS 'Order accrual sum';
 COMMENT ON COLUMN "order".status IS 'Order status';
 COMMENT ON COLUMN "order".uploaded_at IS 'Order oploaded date';
 
--- withdrawl ----------------------
-CREATE TABLE IF NOT EXISTS withdrawl (
+-- withdrawal ----------------------
+CREATE TABLE IF NOT EXISTS withdrawal (
     id INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     user_id UUID NOT NULL REFERENCES "user" (id),
     total DOUBLE PRECISION NOT NULL,
@@ -50,15 +50,15 @@ CREATE TABLE IF NOT EXISTS withdrawl (
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS user_idx ON withdrawl (user_id);
+CREATE INDEX IF NOT EXISTS user_idx ON withdrawal (user_id);
 
-COMMENT ON TABLE withdrawl IS 'Withdrawls';
+COMMENT ON TABLE withdrawal IS 'Withdrawals';
 
-COMMENT ON COLUMN withdrawl.id IS 'Unique withdrawl ID';
-COMMENT ON COLUMN withdrawl.user_id IS 'User ID';
-COMMENT ON COLUMN withdrawl.total IS 'Withdrawl total sum';
-COMMENT ON COLUMN withdrawl.number IS 'Order number';
-COMMENT ON COLUMN withdrawl.created_at IS 'Withdrawl request creation date';
+COMMENT ON COLUMN withdrawal.id IS 'Unique withdrawal ID';
+COMMENT ON COLUMN withdrawal.user_id IS 'User ID';
+COMMENT ON COLUMN withdrawal.total IS 'Withdrawal total sum';
+COMMENT ON COLUMN withdrawal.number IS 'Order number';
+COMMENT ON COLUMN withdrawal.created_at IS 'Withdrawal request creation date';
 
 COMMIT;
 
