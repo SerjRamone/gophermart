@@ -17,12 +17,24 @@ const (
 	OrderStatusProcessing = "PROCESSING"
 	OrderStatusInvalid    = "INVALID"
 	OrderStatusProcessed  = "PROCESSED"
+
+	OrderAccrualStatusRegistered = "REGISTERED"
+	OrderAccrualStatusInvalid    = "INVALID"
+	OrderAccrualStatusProcessing = "PROCESSING"
+	OrderAccrualStatusProcessed  = "PROCESSED"
 )
 
 // OrderForm data object from request
 type OrderForm struct {
 	UserID string `json:"user_id"`
 	Number string `json:"number"`
+}
+
+// OrderAccrual data oject from accrual service
+type OrderAccrual struct {
+	OrderNumber string  `json:"order"`
+	Status      string  `json:"status"`
+	Accrual     float64 `json:"accrual"`
 }
 
 // Order data object from storage

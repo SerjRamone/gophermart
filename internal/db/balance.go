@@ -12,16 +12,18 @@ import (
 func (db *DB) GetUserBalance(ctx context.Context, userID string) (*models.UserBalance, error) {
 	query := `
     SELECT
+    	current_sum - withdrawn_sum AS current,
+    	withdrawn_sum AS withdrawn
+	FROM (
+    	SELECT COALESCE(SUM(o.accrual), 0) AS current_sum
+    	FROM "order" o 
+    	WHERE o.user_id = $1
+	) AS orders,
 	(
-		SELECT COALESCE(SUM(o.accrual), 0)
-		FROM "order"o 
-		WHERE o.user_id = $1
-	) AS current,
-	(
-		SELECT COALESCE(SUM(w.total), 0)
-		FROM withdrawal w
-		WHERE w.user_id = $1
-	) AS withdrawn;`
+    	SELECT COALESCE(SUM(w.total), 0) AS withdrawn_sum
+    	FROM withdrawal w
+    	WHERE w.user_id = $1
+	) AS withdrawals;`
 	row := db.pool.QueryRow(ctx, query, userID)
 	ub := models.UserBalance{}
 	err := row.Scan(&ub.Current, &ub.Withdrawn)

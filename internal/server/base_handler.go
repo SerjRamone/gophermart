@@ -31,6 +31,8 @@ type Storage interface {
 	GetUserBalance(ctx context.Context, userID string) (*models.UserBalance, error)
 	CreateWithdrawal(ctx context.Context, userID string, number string, total float64) error
 	GetWithdrawals(ctx context.Context, userID string) ([]*models.Withdrawal, error)
+	GetUnprocessedOrders(ctx context.Context) ([]*models.Order, error)
+	UpdateOrder(ctx context.Context, order *models.Order) error
 }
 
 // NewBaseHandler creates new baseHandler

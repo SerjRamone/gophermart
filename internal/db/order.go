@@ -74,3 +74,46 @@ func (db *DB) GetUserOrders(ctx context.Context, u *models.User) ([]*models.Orde
 
 	return orders, nil
 }
+
+// GetUnprocessedOrders ...
+func (db *DB) GetUnprocessedOrders(ctx context.Context) ([]*models.Order, error) {
+	// do query
+	rows, err := db.pool.Query(
+		ctx,
+		`SELECT id, user_id, number, accrual, status, uploaded_at FROM "order" WHERE status IN ($1, $2);`,
+		models.OrderStatusNew,
+		models.OrderStatusProcessing,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("query error: %w", err)
+	}
+	defer rows.Close()
+
+	// scan rows into slice
+	var orders []*models.Order
+	for rows.Next() {
+		var o models.Order
+		if err := rows.Scan(&o.ID, &o.UserID, &o.Number, &o.Accrual, &o.Status, &o.UploadedAt); err != nil {
+			return nil, fmt.Errorf("row scan error: %w", err)
+		}
+		orders = append(orders, &o)
+	}
+
+	return orders, nil
+}
+
+// UpdateOrder ...
+func (db *DB) UpdateOrder(ctx context.Context, order *models.Order) error {
+	_, err := db.pool.Exec(
+		ctx,
+		`UPDATE "order" SET accrual = $2, status = $3 WHERE id = $1;`,
+		order.ID,
+		order.Accrual,
+		order.Status,
+	)
+	if err != nil {
+		return fmt.Errorf("order update error: %w", err)
+	}
+
+	return nil
+}

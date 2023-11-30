@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/SerjRamone/gophermart/internal/accrual"
 	"github.com/SerjRamone/gophermart/internal/config"
 	"github.com/SerjRamone/gophermart/internal/db"
 	"github.com/SerjRamone/gophermart/internal/server"
@@ -54,6 +55,12 @@ func run() error {
 			cancel()
 		}
 	}()
+
+	// @todo
+	// start watching orders
+	// new accrual client
+	accrualClient := accrual.NewAccrualClient(conf.AccrualSystemAddress)
+	accrualClient.WatchOrders(ctx, db)
 
 	<-ctx.Done()
 
