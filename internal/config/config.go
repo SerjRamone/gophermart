@@ -36,7 +36,7 @@ type Gophermart struct {
 
 // NewGophermart constructor for gophermart config
 func NewGophermart() (Gophermart, error) {
-	g := Gophermart{}
+	var g Gophermart
 	g.parseFlags()
 	return g, g.parseEnv()
 }

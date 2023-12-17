@@ -7,21 +7,23 @@ import (
 )
 
 // Log is no-operation logger by default
-// Init in Init() function
+// Init in New() function
 var log *zap.Logger = zap.NewNop()
 
-// Init and configure logger
-func Init(level string) error {
-	// set log level
-	lvl, err := zap.ParseAtomicLevel(level)
-	if err != nil {
-		return err
-	}
+// Option ...
+type Option func(*zap.Config) error
 
+// New init and configure logger
+func New(opts ...Option) error {
+	// set default config
 	cfg := zap.NewProductionConfig()
-	cfg.Level = lvl
-	cfg.EncoderConfig.TimeKey = "timestamp"
-	cfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+
+	// apply options
+	for _, fn := range opts {
+		if err := fn(&cfg); err != nil {
+			return err
+		}
+	}
 
 	zl, err := cfg.Build()
 	if err != nil {
@@ -30,6 +32,34 @@ func Init(level string) error {
 
 	log = zl
 	return nil
+}
+
+// LevelOption return Option func for setting Loglevel value
+func LevelOption(level string) Option {
+	return func(c *zap.Config) error {
+		lvl, err := zap.ParseAtomicLevel(level)
+		if err != nil {
+			return err
+		}
+		c.Level = lvl
+		return nil
+	}
+}
+
+// TimeKeyOption return Option func for setting TimeKey value
+func TimeKeyOption(timeKey string) Option {
+	return func(c *zap.Config) error {
+		c.EncoderConfig.TimeKey = timeKey
+		return nil
+	}
+}
+
+// TimeEncoderOption return Option func for setting TimeEncoder value
+func TimeEncoderOption(encoder zapcore.TimeEncoder) Option {
+	return func(c *zap.Config) error {
+		c.EncoderConfig.EncodeTime = encoder
+		return nil
+	}
 }
 
 // Info logs a message at InfoLevel

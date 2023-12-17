@@ -1,14 +1,15 @@
-// Package db contents common code for working with database
-package db
+// Package repository contents common code for working with database
+package repository
 
 import (
 	"context"
 	"database/sql"
 	"fmt"
 	"io/fs"
+	"time"
 
-	"github.com/SerjRamone/gophermart/internal/db/migrations"
-	"github.com/SerjRamone/gophermart/internal/server"
+	"github.com/SerjRamone/gophermart/internal/server/handlers"
+	"github.com/SerjRamone/gophermart/migrations"
 	"github.com/SerjRamone/gophermart/pkg/logger"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
@@ -16,7 +17,7 @@ import (
 	"github.com/pressly/goose/v3"
 )
 
-var _ server.Storage = (*DB)(nil)
+var _ handlers.Storage = (*DB)(nil)
 
 // DB ...
 type DB struct {
@@ -36,9 +37,12 @@ func NewDB(ctx context.Context, dsn string) (*DB, error) {
 	}
 	defer conn.Release()
 
-	err = conn.Ping(ctx)
+	pingCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+
+	err = conn.Ping(pingCtx)
 	if err != nil {
-		return nil, fmt.Errorf("could not pong db: %w", err)
+		return nil, fmt.Errorf("could not get pong from db: %w", err)
 	}
 
 	logger.Info("connected to the DB")

@@ -1,4 +1,5 @@
-package server
+// Package handlers ...
+package handlers
 
 import (
 	"context"
@@ -6,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/SerjRamone/gophermart/internal/models"
+	"github.com/SerjRamone/gophermart/internal/server/middlewares"
 	"github.com/SerjRamone/gophermart/pkg/logger"
 	"go.uber.org/zap"
 )
@@ -34,12 +36,12 @@ func (bHandler baseHandler) Login(ctx context.Context, w http.ResponseWriter, r 
 	}
 
 	// hashes did not match
-	if !bHandler.compareHashAndPass(u.PasswordHash, uf.Password) {
+	if !bHandler.hasher.CompareHashAndPass(u.PasswordHash, uf.Password) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	token, err := GenerateJWT(bHandler.secret, u.Login, bHandler.tokenExpr)
+	token, err := middlewares.GenerateJWT(bHandler.secret, u.Login, bHandler.tokenExpr)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

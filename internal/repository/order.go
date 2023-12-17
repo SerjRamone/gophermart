@@ -1,4 +1,7 @@
-package db
+// Package repository ...
+//
+//go:generate gotests --all -w order.go
+package repository
 
 import (
 	"context"
@@ -71,6 +74,9 @@ func (db *DB) GetUserOrders(ctx context.Context, u *models.User) ([]*models.Orde
 		}
 		orders = append(orders, &o)
 	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows scan error: %w", err)
+	}
 
 	return orders, nil
 }
@@ -97,6 +103,9 @@ func (db *DB) GetUnprocessedOrders(ctx context.Context) ([]*models.Order, error)
 			return nil, fmt.Errorf("row scan error: %w", err)
 		}
 		orders = append(orders, &o)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows scan error: %w", err)
 	}
 
 	return orders, nil

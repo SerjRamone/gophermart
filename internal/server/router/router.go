@@ -1,16 +1,21 @@
-package server
+// Package router ...
+package router
 
 import (
 	"net/http"
 
+	"github.com/SerjRamone/gophermart/internal/server/handlers"
+	"github.com/SerjRamone/gophermart/internal/server/middlewares"
+	"github.com/SerjRamone/gophermart/internal/server/security"
 	"github.com/go-chi/chi/v5"
 )
 
 // NewRouter returns chi.Router
-func NewRouter(secret []byte, tokenExpr int, storage Storage) chi.Router {
-	baseHandler := NewBaseHandler(secret, tokenExpr, storage)
+func NewRouter(secret []byte, tokenExpr int, storage handlers.Storage) chi.Router {
+	hasher := security.NewHasher()
+	baseHandler := handlers.NewBaseHandler(secret, tokenExpr, storage, hasher)
 	mux := chi.NewRouter()
-	mux.Use(RequestLogger)
+	mux.Use(middlewares.RequestLogger)
 
 	// api
 	mux.Route("/api/user", func(r chi.Router) {

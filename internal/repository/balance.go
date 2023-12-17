@@ -1,4 +1,4 @@
-package db
+package repository
 
 import (
 	"context"
@@ -89,6 +89,9 @@ func (db *DB) GetWithdrawals(ctx context.Context, userID string) ([]*models.With
 		}
 
 		withdrwls = append(withdrwls, &w)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows scan error: %w", err)
 	}
 
 	return withdrwls, nil

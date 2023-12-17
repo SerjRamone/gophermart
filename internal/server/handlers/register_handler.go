@@ -1,4 +1,4 @@
-package server
+package handlers
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/SerjRamone/gophermart/internal/models"
+	"github.com/SerjRamone/gophermart/internal/server/middlewares"
 	"github.com/SerjRamone/gophermart/pkg/logger"
 	"go.uber.org/zap"
 )
@@ -20,7 +21,7 @@ func (bHandler baseHandler) Register(ctx context.Context, w http.ResponseWriter,
 	}
 
 	// hash password
-	uf.Password, err = bHandler.getHash(uf.Password)
+	uf.Password, err = bHandler.hasher.GetHash(uf.Password)
 	if err != nil {
 		logger.Error("get password hash error", zap.Error(err))
 		w.WriteHeader(http.StatusInternalServerError)
@@ -44,7 +45,7 @@ func (bHandler baseHandler) Register(ctx context.Context, w http.ResponseWriter,
 	// return
 
 	// generate auth token
-	token, err := GenerateJWT(bHandler.secret, uf.Login, bHandler.tokenExpr)
+	token, err := middlewares.GenerateJWT(bHandler.secret, uf.Login, bHandler.tokenExpr)
 	if err != nil {
 		logger.Error("generate JWT error", zap.Error(err))
 		w.WriteHeader(http.StatusInternalServerError)

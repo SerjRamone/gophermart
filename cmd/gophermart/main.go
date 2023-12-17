@@ -3,21 +3,23 @@ package main
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"os/signal"
 	"syscall"
 
 	"github.com/SerjRamone/gophermart/internal/accrual"
 	"github.com/SerjRamone/gophermart/internal/config"
-	"github.com/SerjRamone/gophermart/internal/db"
-	"github.com/SerjRamone/gophermart/internal/server"
+	"github.com/SerjRamone/gophermart/internal/repository"
+	"github.com/SerjRamone/gophermart/internal/server/router"
 	"github.com/SerjRamone/gophermart/pkg/logger"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 func main() {
 	if err := run(); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }
 
@@ -29,7 +31,11 @@ func run() error {
 	}
 
 	// init logger
-	if err := logger.Init(conf.LogLevel); err != nil {
+	if err := logger.New(
+		logger.LevelOption(conf.LogLevel),
+		logger.TimeKeyOption("timestamp"),
+		logger.TimeEncoderOption(zapcore.ISO8601TimeEncoder),
+	); err != nil {
 		return err
 	}
 
@@ -38,14 +44,14 @@ func run() error {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	defer cancel()
 
-	db, err := db.NewDB(ctx, conf.DatabaseURI)
+	db, err := repository.NewDB(ctx, conf.DatabaseURI)
 	if err != nil {
 		return err
 	}
 
 	server := &http.Server{
 		Addr:    conf.RunAddress,
-		Handler: server.NewRouter([]byte(conf.SecretKey), conf.TokenExpiration, db),
+		Handler: router.NewRouter([]byte(conf.SecretKey), conf.TokenExpiration, db),
 	}
 
 	go func() {

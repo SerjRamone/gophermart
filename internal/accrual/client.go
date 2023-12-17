@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/SerjRamone/gophermart/internal/models"
-	"github.com/SerjRamone/gophermart/internal/server"
+	"github.com/SerjRamone/gophermart/internal/server/handlers"
 	"github.com/SerjRamone/gophermart/pkg/logger"
 	"go.uber.org/zap"
 )
@@ -29,6 +29,23 @@ var (
 type AccrualClient struct {
 	httpClient *http.Client
 	url        string
+}
+
+// HTTPError ...
+type HTTPError struct {
+	Err        error
+	StatusCode int
+}
+
+func (e HTTPError) Error() string {
+	return fmt.Sprintf("%v (Code: %v)", e.Err, e.StatusCode)
+}
+
+func newHTTPError(e error, code int) error {
+	return &HTTPError{
+		Err:        e,
+		StatusCode: code,
+	}
 }
 
 // NewAccrualClient constructor
@@ -67,12 +84,11 @@ func (c AccrualClient) getAccrualData(ctx context.Context, order *models.Order) 
 	// check statuses
 	switch resp.StatusCode {
 	case http.StatusTooManyRequests: // 429
-		// @todo
-		logger.Warn("too many request status from accrual service")
+		return nil, newHTTPError(errors.New("too many request status from accrual service"), resp.StatusCode)
 	case http.StatusNoContent: // 204
-		return nil, fmt.Errorf("order is not registered: %w", err)
+		return nil, newHTTPError(errors.New("order is not registered"), resp.StatusCode)
 	case http.StatusInternalServerError: // 500
-		return nil, fmt.Errorf("accrual service internal error: %w", err)
+		return nil, newHTTPError(errors.New("accrual service internal error"), resp.StatusCode)
 	}
 
 	// read response body
@@ -91,7 +107,7 @@ func (c AccrualClient) getAccrualData(ctx context.Context, order *models.Order) 
 }
 
 // WatchOrders starts order processing
-func (c AccrualClient) WatchOrders(ctx context.Context, db server.Storage) {
+func (c AccrualClient) WatchOrders(ctx context.Context, db handlers.Storage) {
 	logger.Info("accrual client: watch orders process started")
 
 	ticker := time.NewTicker(2 * time.Second)

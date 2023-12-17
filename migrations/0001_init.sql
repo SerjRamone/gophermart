@@ -1,7 +1,7 @@
 -- +goose Up
 BEGIN;
     
--- users ----------------------
+-- user -----------------------
 CREATE TABLE IF NOT EXISTS "user" (
     id UUID PRIMARY KEY DEFAULT GEN_RANDOM_UUID(),
     login VARCHAR(155) UNIQUE NOT NULL,
@@ -63,3 +63,17 @@ COMMENT ON COLUMN withdrawal.created_at IS 'Withdrawal request creation date';
 COMMIT;
 
 -- +goose Down
+
+BEGIN;
+
+-- withdrawal ----------------------
+DROP TABLE IF EXISTS withdrawal CASCADE;
+
+-- order ----------------------
+DROP TABLE IF EXISTS "order" CASCADE;
+DROP TYPE IF EXISTS order_status;
+
+-- users ----------------------
+DROP TABLE IF EXISTS "user" CASCADE;
+
+COMMIT;
